@@ -12,6 +12,7 @@ import os                   # for chdir to OUTPUT_NAME
 import re                   # because this is essentially grep
 import webbrowser           # to open matching file
 from pathlib import Path    # to iterate over files.
+from textwrap import indent  # to display text more cleanly
 
 from scraper import OUTPUT_NAME
 
@@ -22,14 +23,16 @@ def print_matches(parsed_args: argparse.Namespace):
     # compile list of matching files.
     matching_files = []
     matching_lines = []
+    matching_linenos = []
     os.chdir(OUTPUT_NAME)
     for season_path in Path(".").iterdir():
         for episode_file in season_path.iterdir():
-            for line in episode_file.read_text().splitlines():
+            for lineno, line in enumerate(episode_file.read_text().splitlines(), start=1):
                 if re.search(pattern, line) is None:
                     continue
                 matching_files.append(episode_file)
                 matching_lines.append(line)
+                matching_linenos.append(lineno)
                 break
             # get text
             # check if match is found
@@ -37,32 +40,39 @@ def print_matches(parsed_args: argparse.Namespace):
             # increment index number
             # go on to next episode
     # present option to navigate to file to search
-    return matching_files, matching_lines
+    return matching_files, matching_lines, matching_linenos
 
-def show_menu(matching_files: list, matching_lines: list):
+def show_menu(matching_files: list, matching_lines: list, matching_linenos: list):
     """
     """
     match_indices = set()
-    # TODO: use textwrap module or something for indentation
     header = "List of Matching Episodes"
-    print(f"\n    {header}\n    {'=' * len(header)}")
+    prefix = " " * 4
+    print()
+    print(indent(header, prefix))
+    #print()
+    print(indent(("=" * len(header)), prefix))
     for match_index, episode_file in enumerate(matching_files):
         episode_name = str(episode_file)
-        print("    %3d: '%s': %s" % (match_index, episode_name.replace(".txt", ""), matching_lines[match_index]))
+        print(indent("%3d: '%s'@L%d" % (match_index, episode_name, matching_linenos[match_index]), prefix))
+        print(indent(matching_lines[match_index], prefix * 2))
         match_indices.add(str(match_index))
     matching_lines.clear()
-    file_to_open = input("\n    Please select the number corresponding the file you wish to open: ")
+    print()
+    print(indent("Please select the number corresponding the file you wish to open: ", prefix), end="")
+    file_to_open = input()
+    print()
     if file_to_open in match_indices:
         file_indexno = int(file_to_open)
         filename = matching_files[file_indexno]
-        print("    Opening '%s' in browser...", filename)
+        print(indent("Opening '%s' in browser." % filename, prefix))
         webbrowser.open_new(str(filename))
     else:
-        print("    '%s' was an invalid selection. Please try again.", file_to_open)
+        print(indent("'%s' was an invalid selection. Please try again." % file_to_open, prefix))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
     parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
     parsed_args = parser.parse_args()
-    matching_files, matching_lines = print_matches(parsed_args)
-    show_menu(matching_files, matching_lines)
+    matching_files, matching_lines, matching_linenos = print_matches(parsed_args)
+    show_menu(matching_files, matching_lines, matching_linenos)
