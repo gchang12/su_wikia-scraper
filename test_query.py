@@ -13,7 +13,7 @@ from unittest.mock import patch
 import argparse
 
 import query
-from scraper import LOGGING_FILE
+from constants import LOGGING_FILE
 
 class TestQuery(unittest.TestCase):
     """
@@ -94,5 +94,7 @@ class TestQuery(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s:su-wikia_scraper.query:%(msg)s", filename=LOGGING_FILE)
+    logging.basicConfig(level=logging.INFO,
+        #format="%(levelname)s:su-wikia_scraper.query:%(msg)s", # format strings don't expand for some reason.
+        filename=LOGGING_FILE)
     unittest.main()

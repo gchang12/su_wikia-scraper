@@ -14,7 +14,7 @@ import webbrowser           # to open matching file
 from pathlib import Path    # to iterate over files.
 from textwrap import indent  # to display text more cleanly
 
-from scraper import OUTPUT_NAME
+from constants import OUTPUT_NAME
 
 def compile_matches(pattern: str):
     """

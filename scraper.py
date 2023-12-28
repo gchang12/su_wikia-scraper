@@ -14,9 +14,7 @@ import re
 from bs4 import BeautifulSoup
 import requests as r
 
-WIKIA_ROOT = "https://steven-universe.fandom.com"
-OUTPUT_NAME = "output"
-LOGGING_FILE = "su-wikia_scraper.log"
+from constants import WIKIA_ROOT, OUTPUT_NAME, LOGGING_FILE
 
 def scrape_transcript(urlname: str):
     """
@@ -29,7 +27,7 @@ def scrape_transcript(urlname: str):
     transcript_table = BeautifulSoup(response.text, "html.parser").find("table", class_="wikitable bgrevo")
     logging.info("Fetching <table class='wikitable bgrevo'> tree for '%s'.", urlname)
     assert transcript_table is not None
-    logging.info("Tree fetched successfully. Looping through contents")
+    logging.info("Tree fetched successfully. Searching contents.")
     line_list = [] # list of tuples
     for index, tr in enumerate(transcript_table.find_all("tr")):
         if index == 0:
@@ -45,9 +43,8 @@ def scrape_transcript(urlname: str):
         else:
             dialogue = tr.find("td").text.strip()
         line = (speaker, dialogue)
-        logging.info("Appending line := %s to 'line_list' parameter.", line)
         line_list.append(line)
-    logging.info("Scraping operation for '%s' successful. Returning 'line_list'")
+    logging.info("Scraped (%d) lines for '%s' successfully. Last line:\n'%s'", index + 1, urlname, line)
     return line_list
 
 
@@ -67,15 +64,15 @@ def scrape_episodeurls(urlname: str):
     episode_cells = BeautifulSoup(response.text, "html.parser").find_all("td", style="border-top:0; font-weight:bold !important")
     logging.info("<td ...> cells successfully fetched. Commencing iteration.")
     episode_urls = []
-    for td in episode_cells:
+    for index, td in enumerate(episode_cells):
         episode_url = td.find('a')['href']
-        logging.info("episode_url := '%s'.", episode_url)
+        #logging.info("episode_url := '%s'.", episode_url)
         episode_name = td.text.strip().strip('"')
-        logging.info("episode_name := '%s'.", episode_name)
+        #logging.info("episode_name := '%s'.", episode_name)
         episode_line = (episode_name, episode_url)
-        logging.info("episode_urls.append(%s)", episode_line)
+        #logging.info("episode_urls.append(%s)", episode_line)
         episode_urls.append(episode_line)
-    logging.info("Scraping operation for '%s' successful. Returning 'episode_urls'.")
+    logging.info("Found (%d) episodes for '%s'. Last episode: %s", index, urlname, episode_line)
     return episode_urls
 
 def format_linelist(linelist: list):
@@ -123,7 +120,7 @@ def scrape_episodes():
         season_url = get_seasonurl(season_num)
         logging.info("Scraping '%s' for episode list of Season_%d.", season_url, season_num)
         episode_urls = scrape_episodeurls(season_url)
-        logging.info("Episode list for Season_%d found. %d episodes found.", season_num, len(episode_urls))
+        #logging.info("Episode list for Season_%d found. %d episodes found.", season_num, len(episode_urls))
         episode_indexno = 1
         for episode_name, episode_url in episode_urls:
             line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")

@@ -9,6 +9,8 @@ import unittest
 import scraper
 import requests as r
 
+from constants import LOGGING_FILE, WIKIA_ROOT
+
 class ScraperTest(unittest.TestCase):
     """
     Defines unit tests for scraper.* methods.
@@ -43,7 +45,7 @@ class ScraperTest(unittest.TestCase):
         num_episodes = 52
         self.assertIsInstance(episode_urls, list)
         self.assertEqual(len(episode_urls), num_episodes)
-        wikia_root = scraper.WIKIA_ROOT
+        wikia_root = WIKIA_ROOT
         for episode_name, episode_url in episode_urls:
             assert isinstance(episode_name, str)
             assert isinstance(episode_url, str)
@@ -72,5 +74,5 @@ class ScraperTest(unittest.TestCase):
         self.assertEqual(expected, formatted_lines)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, filename=scraper.LOGGING_FILE)
+    logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
     unittest.main()
