@@ -38,7 +38,7 @@ def compile_matches(pattern: str):
                 break
     return matching_files, matching_lines, matching_linenos
 
-def show_menu(pattern: str, matching_files: list, matching_lines: list, matching_linenos: list):
+def show_menu(matching_files: list, matching_lines: list, matching_linenos: list):
     """
     Presents a menu that displays files that contain a line that matches the pattern.
 
@@ -58,12 +58,13 @@ def show_menu(pattern: str, matching_files: list, matching_lines: list, matching
         print(indent(matching_lines[match_index], prefix * 2))
         match_indices.add(str(match_index))
     # ultimately for clearing space, but functionality-wise entirely optional
-    #matching_lines.clear()
-    #matching_linenos.clear()
+    matching_lines.clear()
+    matching_linenos.clear()
     print()
     print(indent("Please select the number corresponding the file you wish to open: ", prefix), end="")
     file_to_open = input()
     print()
+    #breakpoint()
     if file_to_open in match_indices:
         file_indexno = int(file_to_open)
         filename = matching_files[file_indexno]
@@ -85,7 +86,7 @@ def main():
     if not matching_files:
         print(indent("The regex pattern '%s' did not match any dialogue or characters. Please try again." % pattern, prefix))
         exit()
-    show_menu(pattern, matching_files, matching_lines, matching_linenos)
+    show_menu(matching_files, matching_lines, matching_linenos)
 
 if __name__ == '__main__':
     main()

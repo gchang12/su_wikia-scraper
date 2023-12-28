@@ -6,7 +6,11 @@ Contains unit tests for query.py.
 - main()
 """
 
+import os
 import unittest
+from unittest.mock import patch
+import argparse
+
 import query
 
 class TestQuery(unittest.TestCase):
@@ -26,20 +30,46 @@ class TestQuery(unittest.TestCase):
         # TODO: Figure out how to manually edit argparse.ArgumentParser
         pass
 
-    def test_show_menu(self):
+    @patch("webbrowser.open_new")
+    @patch("builtins.input")
+    def test_show_menu(self, mockinput, mockopener):
         """
         Tests show_menu method, and explores numerical menu input, valid or otherwise.
 
         Mocks: webbrowser.open_new
         """
-        pass
+        matching_files = ['weh']
+        matching_lines = ['arrr']
+        matching_linenos = [0]
+        mockinput.return_value = ""
+        query.show_menu(matching_files, matching_lines, matching_linenos)
+        mockopener.assert_not_called()
+        matching_files = ['weh']
+        matching_lines = ['arrr']
+        matching_linenos = [0]
+        mockinput.return_value = "0"
+        query.show_menu(matching_files, matching_lines, matching_linenos)
+        mockopener.assert_called_once_with(matching_files[0])
 
     def test_compile_matches(self):
         """
         Tests compile_matches method, and explores resultsets, trivial or otherwise.
         """
-        pass
+        # confirmed via manual input to return results as listed.
+        pattern = "nye"
+        matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
+        assert len(matching_files) == 1
+        assert len(matching_lines) == 1
+        assert len(matching_linenos) == 1
+        pattern = "lapis"
+        os.chdir('..')
+        matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
+        assert len(matching_files) == 0
+        assert len(matching_lines) == 0
+        assert len(matching_linenos) == 0
+        os.chdir('..')
 
+    @unittest.skip # not really decoupled from the other two.
     def test_main(self):
         """
         Tests main method, and explores resultsets, and various arguments that can be given.
@@ -50,3 +80,9 @@ class TestQuery(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    #argparse
+    """
+    parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
+    parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
+    parser.pattern = ['']
+    """
