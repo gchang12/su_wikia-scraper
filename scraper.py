@@ -20,12 +20,13 @@ def scrape_transcript(urlname: str):
     """
     Scrapes transcript into list of 2-tuples, each of the form (speaker, dialogue)
     """
+    logging.info("scrape_transcript('%s')", urlname)
     response = r.get(urlname)
-    logging.info("Sending GET request to '%s'.", urlname)
+    logging.info("Sending GET request")
     response.raise_for_status()
     logging.info("Request successful. Commencing table-fetch operation.")
     transcript_table = BeautifulSoup(response.text, "html.parser").find("table", class_="wikitable bgrevo")
-    logging.info("Fetching <table class='wikitable bgrevo'> tree for '%s'.", urlname)
+    logging.info("Fetching <table class='wikitable bgrevo'> tree.")
     assert transcript_table is not None
     logging.info("Tree fetched successfully. Searching contents.")
     line_list = [] # list of tuples
@@ -44,7 +45,7 @@ def scrape_transcript(urlname: str):
             dialogue = tr.find("td").text.strip()
         line = (speaker, dialogue)
         line_list.append(line)
-    logging.info("Scraped (%d) lines for '%s' successfully. Last line:\n'%s'", index + 1, urlname, line)
+    logging.info("Scraped (%d) lines successfully. Last line: %s", index + 1, line)
     return line_list
 
 
@@ -56,8 +57,9 @@ def scrape_episodeurls(urlname: str):
     # Commented to fetch future episodes
     #assert re.fullmatch(r"https://steven-universe.fandom.com/wiki/Season_[1-5]", urlname) is not None
     #logging.info("'%s' is of the form, 'https://steven-universe.fandom.com/wiki/Season_[1-5]. Proceeding.", urlname)
+    logging.info("scrape_episodeurls('%s')", urlname)
     response = r.get(urlname)
-    logging.info("Sending GET request to '%s'.", urlname)
+    logging.info("Sending GET request.")
     response.raise_for_status()
     logging.info("GET request successfully sent.")
     logging.info("Fetching <td style='border-top:0; font-weight:bold !important'> cells.")
@@ -72,7 +74,7 @@ def scrape_episodeurls(urlname: str):
         episode_line = (episode_name, episode_url)
         #logging.info("episode_urls.append(%s)", episode_line)
         episode_urls.append(episode_line)
-    logging.info("Found (%d) episodes for '%s'. Last episode: %s", index, urlname, episode_line)
+    logging.info("Found (%d) episodes. Last episode: %s", index, episode_line)
     return episode_urls
 
 def format_linelist(linelist: list):
@@ -167,6 +169,11 @@ def scrape_future():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
-    scrape_episodes()
-    scrape_movie()
-    scrape_future()
+    scrape_or_no = ""
+    output_dir = Path(OUTPUT_NAME)
+    while scrape_or_no not in ("y", "n") and output_dir.exists():
+        scrape_or_no = input(f"\n    '{str(output_dir)}' directory for transcripts already exists. Overwrite, and remake? (y/n) ")
+    if scrape_or_no == "y":
+        scrape_episodes()
+        scrape_movie()
+        scrape_future()
