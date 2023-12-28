@@ -40,15 +40,18 @@ def print_matches(parsed_args: argparse.Namespace):
             # increment index number
             # go on to next episode
     # present option to navigate to file to search
-    return matching_files, matching_lines, matching_linenos
+    return pattern, matching_files, matching_lines, matching_linenos
 
-def show_menu(matching_files: list, matching_lines: list, matching_linenos: list):
+def show_menu(pattern: str, matching_files: list, matching_lines: list, matching_linenos: list):
     """
     """
-    match_indices = set()
-    header = "List of Matching Episodes"
     prefix = " " * 4
     print()
+    if not matching_files:
+        print(indent("The regex pattern '%s' did not match any dialogue or characters. Please try again." % pattern, prefix))
+        exit()
+    match_indices = set()
+    header = "List of Matching Episodes"
     print(indent(header, prefix))
     #print()
     print(indent(("=" * len(header)), prefix))
@@ -74,5 +77,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
     parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
     parsed_args = parser.parse_args()
-    matching_files, matching_lines, matching_linenos = print_matches(parsed_args)
-    show_menu(matching_files, matching_lines, matching_linenos)
+    pattern, matching_files, matching_lines, matching_linenos = print_matches(parsed_args)
+    show_menu(pattern, matching_files, matching_lines, matching_linenos)
