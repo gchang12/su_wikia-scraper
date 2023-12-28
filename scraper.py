@@ -169,6 +169,7 @@ def scrape_future():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
+    """
     scrape_or_no = ""
     output_dir = Path(OUTPUT_NAME)
     while scrape_or_no not in ("y", "n") and output_dir.exists():
@@ -177,3 +178,4 @@ if __name__ == '__main__':
         scrape_episodes()
         scrape_movie()
         scrape_future()
+    """
