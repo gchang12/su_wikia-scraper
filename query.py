@@ -16,10 +16,10 @@ from textwrap import indent  # to display text more cleanly
 
 from scraper import OUTPUT_NAME
 
-def print_matches(parsed_args: argparse.Namespace):
+def compile_matches(pattern: str):
     """
+    Compiles a table of files, lines, and line numbers matching the 'pattern' str parameter.
     """
-    pattern = parsed_args.pattern.pop(0)
     # compile list of matching files.
     matching_files = []
     matching_lines = []
@@ -27,6 +27,8 @@ def print_matches(parsed_args: argparse.Namespace):
     os.chdir(OUTPUT_NAME)
     for season_path in Path(".").iterdir():
         for episode_file in season_path.iterdir():
+            # get text
+            # check if match is found
             for lineno, line in enumerate(episode_file.read_text().splitlines(), start=1):
                 if re.search(pattern, line) is None:
                     continue
@@ -34,22 +36,17 @@ def print_matches(parsed_args: argparse.Namespace):
                 matching_lines.append(line)
                 matching_linenos.append(lineno)
                 break
-            # get text
-            # check if match is found
-            # if so, print matching first matching line, along with index number.
-            # increment index number
-            # go on to next episode
-    # present option to navigate to file to search
-    return pattern, matching_files, matching_lines, matching_linenos
+    return matching_files, matching_lines, matching_linenos
 
 def show_menu(pattern: str, matching_files: list, matching_lines: list, matching_linenos: list):
     """
+    Presents a menu that displays files that contain a line that matches the pattern.
+
+    The menu contains a line number, and presents an interface for the user to open the file.
     """
+    # present option to navigate to file to search
     prefix = " " * 4
     print()
-    if not matching_files:
-        print(indent("The regex pattern '%s' did not match any dialogue or characters. Please try again." % pattern, prefix))
-        exit()
     match_indices = set()
     header = "List of Matching Episodes"
     print(indent(header, prefix))
@@ -60,7 +57,9 @@ def show_menu(pattern: str, matching_files: list, matching_lines: list, matching
         print(indent("%3d: '%s'@L%d" % (match_index, episode_name, matching_linenos[match_index]), prefix))
         print(indent(matching_lines[match_index], prefix * 2))
         match_indices.add(str(match_index))
-    matching_lines.clear()
+    # ultimately for clearing space, but functionality-wise entirely optional
+    #matching_lines.clear()
+    #matching_linenos.clear()
     print()
     print(indent("Please select the number corresponding the file you wish to open: ", prefix), end="")
     file_to_open = input()
@@ -73,9 +72,20 @@ def show_menu(pattern: str, matching_files: list, matching_lines: list, matching
     else:
         print(indent("'%s' was an invalid selection. Please try again." % file_to_open, prefix))
 
-if __name__ == '__main__':
+def main():
+    """
+    Accepts cmdline argument 'pattern' for which the transcripts are searched.
+
+    Presents a menu for the end-user to open a file that contains a matching line.
+    """
     parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
     parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
-    parsed_args = parser.parse_args()
-    pattern, matching_files, matching_lines, matching_linenos = print_matches(parsed_args)
+    pattern = parser.parse_args().pattern.pop()
+    matching_files, matching_lines, matching_linenos = compile_matches(pattern)
+    if not matching_files:
+        print(indent("The regex pattern '%s' did not match any dialogue or characters. Please try again." % pattern, prefix))
+        exit()
     show_menu(pattern, matching_files, matching_lines, matching_linenos)
+
+if __name__ == '__main__':
+    main()

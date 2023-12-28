@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """
+Tests scraper.py
 """
 
 import logging
@@ -10,10 +11,12 @@ import requests as r
 
 class ScraperTest(unittest.TestCase):
     """
+    Defines unit tests for scraper.* methods.
     """
 
     def setUp(self):
         """
+        Defines a transcript page to compile dialogue lines, an index page to compile episode URLs, and a mock output line.
         """
         self.transcript_page = "https://steven-universe.fandom.com/wiki/Political_Power/Transcript"
         self.index_page = "https://steven-universe.fandom.com/wiki/Season_1"
@@ -23,6 +26,9 @@ class ScraperTest(unittest.TestCase):
             ]
 
     def test_scrape_transcript(self):
+        """
+        Tests scrape_transcript to see if it compiles (speaker, dialogue) tuples into a list.
+        """
         line_list = scraper.scrape_transcript(self.transcript_page)
         for speaker, dialogue in line_list:
             if type(speaker) != str and speaker is not None:
@@ -30,6 +36,9 @@ class ScraperTest(unittest.TestCase):
             assert isinstance(dialogue, str)
 
     def test_scrape_episodeurls(self):
+        """
+        Tests scrape_episodeurls to see if it compiles valid episode URLs.
+        """
         episode_urls = scraper.scrape_episodeurls(self.index_page)
         num_episodes = 52
         self.assertIsInstance(episode_urls, list)
@@ -44,6 +53,9 @@ class ScraperTest(unittest.TestCase):
             response.raise_for_status()
 
     def test_format_linelist(self):
+        """
+        Tests format_linelist to see if it produces the desired output.
+        """
         self.line_list.insert(0, (42, None))
         with self.assertRaises(TypeError):
             # because speaker is int (i.e. not None or str)
