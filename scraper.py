@@ -16,6 +16,7 @@ import requests as r
 
 WIKIA_ROOT = "https://steven-universe.fandom.com"
 OUTPUT_NAME = "output"
+LOGGING_FILE = "su-wikia_scraper.log"
 
 def scrape_transcript(urlname: str):
     """
@@ -168,7 +169,7 @@ def scrape_future():
         episode_indexno += 1
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, filename="su_wikia-scraper.log")
+    logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
     scrape_episodes()
     scrape_movie()
     scrape_future()

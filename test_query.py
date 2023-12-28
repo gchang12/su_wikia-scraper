@@ -6,12 +6,14 @@ Contains unit tests for query.py.
 - main()
 """
 
+import logging
 import os
 import unittest
 from unittest.mock import patch
 import argparse
 
 import query
+from scraper import LOGGING_FILE
 
 class TestQuery(unittest.TestCase):
     """
@@ -41,14 +43,19 @@ class TestQuery(unittest.TestCase):
         matching_files = ['weh']
         matching_lines = ['arrr']
         matching_linenos = [0]
+        logging.info("Setting input.return_value = ''.")
         mockinput.return_value = ""
         query.show_menu(matching_files, matching_lines, matching_linenos)
+        logging.info("Assert: webbrowser.open_new is not called.")
         mockopener.assert_not_called()
         matching_files = ['weh']
         matching_lines = ['arrr']
         matching_linenos = [0]
+        logging.info("Setting input.return_value = '0'.")
         mockinput.return_value = "0"
+        #mockinput.side_effect = lambda *args, **kwds: print(0)
         query.show_menu(matching_files, matching_lines, matching_linenos)
+        logging.info("Assert: webbrowser.open_new is called once with '%s'.", matching_files[0])
         mockopener.assert_called_once_with(matching_files[0])
 
     def test_compile_matches(self):
@@ -57,17 +64,25 @@ class TestQuery(unittest.TestCase):
         """
         # confirmed via manual input to return results as listed.
         pattern = "nye"
+        logging.info("pattern := '%s'", pattern)
         matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
+        logging.info("Assert: Return value has length 1.")
         assert len(matching_files) == 1
         assert len(matching_lines) == 1
         assert len(matching_linenos) == 1
-        pattern = "lapis"
+        logging.info("Currently in '%s'.", os.getcwd())
         os.chdir('..')
+        logging.info("chdir ..; Currently in '%s'.", os.getcwd())
+        pattern = "lapis"
+        logging.info("pattern := '%s'", pattern)
+        logging.info("Assert: Return value has length 0.")
         matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
         assert len(matching_files) == 0
         assert len(matching_lines) == 0
         assert len(matching_linenos) == 0
+        logging.info("Currently in '%s'.", os.getcwd())
         os.chdir('..')
+        logging.info("chdir ..; Currently in '%s'.", os.getcwd())
 
     @unittest.skip # not really decoupled from the other two.
     def test_main(self):
@@ -79,10 +94,5 @@ class TestQuery(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:su-wikia_scraper.query:%(msg)s", filename=LOGGING_FILE)
     unittest.main()
-    #argparse
-    """
-    parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
-    parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
-    parser.pattern = ['']
-    """
