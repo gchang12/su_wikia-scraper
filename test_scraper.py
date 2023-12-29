@@ -50,7 +50,7 @@ class ScraperTest(unittest.TestCase):
             assert isinstance(episode_name, str)
             assert isinstance(episode_url, str)
             full_episode_url = wikia_root + episode_url
-            logging.info("Assert: '%s' is a valid URL", full_episode_url)
+            logging.info("Assert: %r is a valid URL", full_episode_url)
             response = r.get(full_episode_url)
             response.raise_for_status()
 

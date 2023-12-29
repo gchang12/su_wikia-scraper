@@ -20,7 +20,7 @@ def scrape_transcript(urlname: str):
     """
     Scrapes transcript into list of 2-tuples, each of the form (speaker, dialogue)
     """
-    logging.info("scrape_transcript('%s')", urlname)
+    logging.info("scrape_transcript(%r)", urlname)
     response = r.get(urlname)
     logging.info("Sending GET request")
     response.raise_for_status()
@@ -56,8 +56,8 @@ def scrape_episodeurls(urlname: str):
     """
     # Commented to fetch future episodes
     #assert re.fullmatch(r"https://steven-universe.fandom.com/wiki/Season_[1-5]", urlname) is not None
-    #logging.info("'%s' is of the form, 'https://steven-universe.fandom.com/wiki/Season_[1-5]. Proceeding.", urlname)
-    logging.info("scrape_episodeurls('%s')", urlname)
+    #logging.info("%r is of the form, 'https://steven-universe.fandom.com/wiki/Season_[1-5]. Proceeding.", urlname)
+    logging.info("scrape_episodeurls(%r)", urlname)
     response = r.get(urlname)
     logging.info("Sending GET request.")
     response.raise_for_status()
@@ -68,9 +68,9 @@ def scrape_episodeurls(urlname: str):
     episode_urls = []
     for index, td in enumerate(episode_cells):
         episode_url = td.find('a')['href']
-        #logging.info("episode_url := '%s'.", episode_url)
+        #logging.info("episode_url := %r.", episode_url)
         episode_name = td.text.strip().strip('"')
-        #logging.info("episode_name := '%s'.", episode_name)
+        #logging.info("episode_name := %r.", episode_name)
         episode_line = (episode_name, episode_url)
         #logging.info("episode_urls.append(%s)", episode_line)
         episode_urls.append(episode_line)
@@ -105,7 +105,7 @@ def scrape_episodes():
     num_seasons = 5
     output_dir = Path(OUTPUT_NAME)
     output_dir.mkdir(exist_ok=True)
-    logging.info("Created '%s' output directory.", OUTPUT_NAME)
+    logging.info("Created %r output directory.", OUTPUT_NAME)
 
     def get_seasonurl(snum: int):
         """
@@ -118,19 +118,19 @@ def scrape_episodes():
     for season_num in range(1, num_seasons + 1):
         season_dir = output_dir.joinpath("Season_%d" % season_num)
         season_dir.mkdir(exist_ok=True)
-        logging.info("Created '%s' output directory.", str(season_dir))
+        logging.info("Created %r output directory.", str(season_dir))
         season_url = get_seasonurl(season_num)
-        logging.info("Scraping '%s' for episode list of Season_%d.", season_url, season_num)
+        logging.info("Scraping %r for episode list of Season_%d.", season_url, season_num)
         episode_urls = scrape_episodeurls(season_url)
         #logging.info("Episode list for Season_%d found. %d episodes found.", season_num, len(episode_urls))
         episode_indexno = 1
         for episode_name, episode_url in episode_urls:
             line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")
-            logging.info("Scraping transcript for episode_name := '%s' from episode_url := '%s'", episode_name, WIKIA_ROOT + episode_url)
+            logging.info("Scraping transcript for episode_name := %r from episode_url := %r", episode_name, WIKIA_ROOT + episode_url)
             formatted_lines = format_linelist(line_list)
             episode_file = season_dir.joinpath(str(episode_indexno) + "-" + episode_name + ".txt")
             episode_file.write_text(formatted_lines)
-            logging.info("Episode transcript for Season_%d!'%s' written to '%s'", season_num, episode_name, str(episode_file))
+            logging.info("Episode transcript for Season_%d!%r written to %r", season_num, episode_name, str(episode_file))
             episode_indexno += 1
 
 def scrape_movie():
@@ -138,29 +138,29 @@ def scrape_movie():
     Scrapes transcript for SU: The Movie. Calls: scrape_transcript, format_linelist
     """
     urlname = "https://steven-universe.fandom.com/wiki/Steven_Universe:_The_Movie/Transcript"
-    logging.info("Scraping 'Steven Universe: The Movie' transcript from '%s'.", urlname)
+    logging.info("Scraping 'Steven Universe: The Movie' transcript from %r.", urlname)
     line_list = scrape_transcript(urlname)
     formatted_lines = format_linelist(line_list)
     output_dir = Path(OUTPUT_NAME, "Movie")
     output_dir.mkdir(exist_ok=True)
-    logging.info("Created '%s' output directory.", str(output_dir))
+    logging.info("Created %r output directory.", str(output_dir))
     output_file = output_dir.joinpath("Movie.txt")
     output_file.write_text(formatted_lines)
-    logging.info("Successfully wrote 'Steven Universe: The Movie' transcript to '%s'.", str(output_file))
+    logging.info("Successfully wrote 'Steven Universe: The Movie' transcript to %r.", str(output_file))
 
 def scrape_future():
     """
     Scrapes Future episodes. Calls: scrape_episodeurls, scrape_transcript, format_linelist
     """
     urlname = "https://steven-universe.fandom.com/wiki/Steven_Universe_Future"
-    logging.info("Scraping 'Steven Universe: Future' episode list from '%s'.", urlname)
+    logging.info("Scraping 'Steven Universe: Future' episode list from %r.", urlname)
     episode_urls = scrape_episodeurls(urlname)
     output_dir = Path(OUTPUT_NAME, "Future")
     output_dir.mkdir(exist_ok=True)
-    logging.info("Created '%s' output directory.", str(output_dir))
+    logging.info("Created %r output directory.", str(output_dir))
     episode_indexno = 1
     for episode_name, episode_url in episode_urls:
-        logging.info("Scraping Future!'%s' transcript from '%s'.", episode_name, episode_url)
+        logging.info("Scraping Future!%r transcript from %r.", episode_name, episode_url)
         line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")
         formatted_lines = format_linelist(line_list)
         episode_file = output_dir.joinpath(str(episode_indexno) + "-" + episode_name + ".txt")

@@ -55,7 +55,7 @@ class TestQuery(unittest.TestCase):
         mockinput.return_value = "0"
         #mockinput.side_effect = lambda *args, **kwds: print(0)
         query.show_menu(matching_files, matching_lines, matching_linenos)
-        logging.info("Assert: webbrowser.open_new is called once with '%s'.", matching_files[0])
+        logging.info("Assert: webbrowser.open_new is called once with %r.", matching_files[0])
         mockopener.assert_called_once_with(matching_files[0])
 
     def test_compile_matches(self):
@@ -64,27 +64,27 @@ class TestQuery(unittest.TestCase):
         """
         # confirmed via manual input to return results as listed.
         pattern = "nye"
-        logging.info("pattern := '%s'", pattern)
+        logging.info("pattern := %r", pattern)
         matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
         logging.info("Assert: Return value has length 1.")
         assert len(matching_files) == 1
         assert len(matching_lines) == 1
         assert len(matching_linenos) == 1
-        logging.info("Currently in '%s'.", os.getcwd())
+        logging.info("Currently in %r.", os.getcwd())
         os.chdir('..')
-        logging.info("chdir ..; Currently in '%s'.", os.getcwd())
+        logging.info("chdir ..; Currently in %r.", os.getcwd())
         pattern = "lapis"
-        logging.info("pattern := '%s'", pattern)
+        logging.info("pattern := %r", pattern)
         logging.info("Assert: Return value has length 0.")
         matching_files, matching_lines, matching_linenos = query.compile_matches(pattern)
         assert len(matching_files) == 0
         assert len(matching_lines) == 0
         assert len(matching_linenos) == 0
-        logging.info("Currently in '%s'.", os.getcwd())
+        logging.info("Currently in %r.", os.getcwd())
         os.chdir('..')
-        logging.info("chdir ..; Currently in '%s'.", os.getcwd())
+        logging.info("chdir ..; Currently in %r.", os.getcwd())
 
-    @unittest.skip # not really decoupled from the other two.
+    @unittest.skip # not really decoupled from the other two, and therefore not really a unit test. Note: Research how to do integration tests.
     def test_main(self):
         """
         Tests main method, and explores resultsets, and various arguments that can be given.

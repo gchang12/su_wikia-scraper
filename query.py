@@ -54,7 +54,7 @@ def show_menu(matching_files: list, matching_lines: list, matching_linenos: list
     print(indent(("=" * len(header)), prefix))
     for match_index, episode_file in enumerate(matching_files):
         episode_name = str(episode_file)
-        print(indent("%3d: '%s'@L%d" % (match_index, episode_name, matching_linenos[match_index]), prefix))
+        print(indent("%3d: %r@L%d" % (match_index, episode_name, matching_linenos[match_index]), prefix))
         print(indent(matching_lines[match_index], prefix * 2))
         match_indices.add(str(match_index))
     # ultimately for clearing space, but functionality-wise entirely optional
@@ -68,10 +68,10 @@ def show_menu(matching_files: list, matching_lines: list, matching_linenos: list
     if file_to_open in match_indices:
         file_indexno = int(file_to_open)
         filename = matching_files[file_indexno]
-        print(indent("Opening '%s' in browser." % filename, prefix))
+        print(indent("Opening %r in browser." % filename, prefix))
         webbrowser.open_new(str(filename))
     else:
-        print(indent("'%s' was an invalid selection. Please try again." % file_to_open, prefix))
+        print(indent("%r was an invalid selection. Please try again." % file_to_open, prefix))
 
 def main():
     """
@@ -84,7 +84,7 @@ def main():
     pattern = parser.parse_args().pattern.pop()
     matching_files, matching_lines, matching_linenos = compile_matches(pattern)
     if not matching_files:
-        print(indent("The regex pattern '%s' did not match any dialogue or characters. Please try again." % pattern, prefix))
+        print(indent("The regex pattern %r did not match any dialogue or characters. Please try again." % pattern, prefix))
         exit()
     show_menu(matching_files, matching_lines, matching_linenos)
 
