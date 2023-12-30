@@ -14,7 +14,7 @@ import webbrowser           # to open matching file
 from pathlib import Path    # to iterate over files.
 from textwrap import indent  # to display text more cleanly
 
-from constants import OUTPUT_NAME
+from constants import OUTPUT_NAME, SEASON_ORDER
 
 def compile_matches(pattern: str):
     """
@@ -25,8 +25,31 @@ def compile_matches(pattern: str):
     matching_lines = []
     matching_linenos = []
     os.chdir(OUTPUT_NAME)
-    for season_path in Path(".").iterdir():
-        for episode_file in season_path.iterdir():
+
+    # to get matches in order
+    def order_seasons(spath):
+        """
+        Returns index of the season as defined by SEASON_ORDER.
+        spath: pathlib.Path
+        """
+        sstr = str(spath)
+        return SEASON_ORDER.index(sstr)
+
+    # to get matches in order
+    def order_episodes(efile):
+        """
+        Returns ordering of episode in the season.
+
+        efile: pathlib.Path
+        """
+        episode_filename = efile.name
+        if episode_filename == "Movie.txt":
+            return 0
+        episode_num = re.search(r"(\d+).+", episode_filename).group(1)
+        return int(episode_num)
+
+    for season_path in sorted(Path(".").iterdir(), key=order_seasons):
+        for episode_file in sorted(season_path.iterdir(), key=order_episodes):
             # get text
             # check if match is found
             for lineno, line in enumerate(episode_file.read_text().splitlines(), start=1):
@@ -55,7 +78,7 @@ def show_menu(matching_files: list, matching_lines: list, matching_linenos: list
     for match_index, episode_file in enumerate(matching_files):
         episode_name = str(episode_file)
         print(indent("%3d: %r@L%d" % (match_index, episode_name, matching_linenos[match_index]), prefix))
-        print(indent(matching_lines[match_index], prefix * 2))
+        print(indent(matching_lines[match_index], "  " + prefix * 2))
         match_indices.add(str(match_index))
     # ultimately for clearing space, but functionality-wise entirely optional
     matching_lines.clear()
@@ -68,7 +91,7 @@ def show_menu(matching_files: list, matching_lines: list, matching_linenos: list
     if file_to_open in match_indices:
         file_indexno = int(file_to_open)
         filename = matching_files[file_indexno]
-        print(indent("Opening %r in browser." % filename, prefix))
+        print(indent("Opening %r in browser." % str(filename), prefix))
         webbrowser.open_new(str(filename))
     else:
         print(indent("%r was an invalid selection. Please try again." % file_to_open, prefix))

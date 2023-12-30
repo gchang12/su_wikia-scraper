@@ -54,7 +54,7 @@ def scrape_episodeurls(urlname: str):
     Scrapes episode URLs from a 'urlname' parameter of the form:
     - https://steven-universe.fandom.com/wiki/Season_[1-5]
     """
-    # Commented to fetch future episodes
+    # Commented to fetch Future episodes
     #assert re.fullmatch(r"https://steven-universe.fandom.com/wiki/Season_[1-5]", urlname) is not None
     #logging.info("%r is of the form, 'https://steven-universe.fandom.com/wiki/Season_[1-5]. Proceeding.", urlname)
     logging.info("scrape_episodeurls(%r)", urlname)
