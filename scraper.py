@@ -45,7 +45,7 @@ def scrape_transcript(urlname: str):
             dialogue = tr.find("td").text.strip()
         line = (speaker, dialogue)
         line_list.append(line)
-    logging.info("Scraped (%d) lines successfully. Last line: %s", index + 1, line)
+    logging.info("Scraped (%d) lines successfully. Last line: %s", index, line)
     return line_list
 
 
