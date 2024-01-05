@@ -102,6 +102,7 @@ def main():
 
     Presents a menu for the end-user to open a file that contains a matching line.
     """
+    prefix = " " * 4
     parser = argparse.ArgumentParser(description="grep for lines in SU episodes")
     parser.add_argument('pattern', type=str, nargs=1, help='regex to grep for')
     pattern = parser.parse_args().pattern.pop()
