@@ -86,12 +86,12 @@ def format_linelist(linelist: list):
         if speaker is None:
             row_header = "|"
         elif isinstance(speaker, str):
-            row_header = speaker + ":"
+            row_header = speaker
         else:
             raise TypeError("speaker := %s is not None or of str-type." % speaker)
         assert isinstance(dialogue, str)
         row_content = dialogue
-        new_linelist.append(row_header + " " + row_content)
+        new_linelist.append(row_header + ": " + row_content)
     formatted_lines = "\n".join(new_linelist)
     return formatted_lines
 
