@@ -113,8 +113,11 @@ def scrape_episodes():
         """
         assert isinstance(snum, int)
         assert 1 <= snum <= num_seasons # from outer environment
+        # everything here is just so hard-coupled
         return "https://steven-universe.fandom.com/wiki/Season_%d" % snum
 
+    # definitely implement threading for each season
+    # also, put this in a while-loop so that it works for lots of shows
     for season_num in range(1, num_seasons + 1):
         season_dir = output_dir.joinpath("Season_%d" % season_num)
         season_dir.mkdir(exist_ok=True)
@@ -159,6 +162,7 @@ def scrape_future():
     output_dir.mkdir(exist_ok=True)
     logging.info("Created %r output directory.", str(output_dir))
     episode_indexno = 1
+    # implement threading here, maybe?
     for episode_name, episode_url in episode_urls:
         logging.info("Scraping Future!%r transcript from %r.", episode_name, episode_url)
         line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")
@@ -167,13 +171,43 @@ def scrape_future():
         episode_file.write_text(formatted_lines)
         episode_indexno += 1
 
+def scrape_shorts():
+    """
+    Scrapes shorts into ./output/Shorts/
+    """
+    output_dir = Path(OUTPUT_NAME, "Shorts")
+    output_dir.mkdir(exist_ok=True)
+    logging.info("Created %r output directory.", str(output_dir))
+    # get list of URLs to scrape from.
+    response = r.get("https://steven-universe.fandom.com/wiki/Category:Shorts")
+    response.raise_for_status()
+    shorts_cells = BeautifulSoup(response.text, 'html.parser').find_all("div", class_="category-page__member-left")
+    for index, cell in enumerate(shorts_cells):
+        if not index:
+            # skip 'Classroom Shorts' link
+            continue
+        # get URL, then scrape from it
+        #print(cell)
+        source_url = WIKIA_ROOT + cell.find("a")['href'] + "/Transcript"
+        short_title = cell.find('a')['title']
+        # get transcript, then format to writeable format
+        line_list = scrape_transcript(source_url)
+        formatted_lines = format_linelist(line_list)
+        # write to file
+        output_file = output_dir.joinpath(str(index) + "-" + short_title + ".txt")
+        output_file.write_text(formatted_lines)
+        logging.info("Short #%d found: %r. Scraped and wrote %d lines to %r", index, short_title, len(line_list), str(output_file))
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
     scrape_or_no = "y"
     output_dir = Path(OUTPUT_NAME)
+    scrape_shorts()
+    """
     while scrape_or_no not in ("y", "n") and output_dir.exists():
         scrape_or_no = input(f"\n    '{str(output_dir)}' directory for transcripts already exists. Overwrite, and remake? (y/n) ")
     if scrape_or_no == "y":
         scrape_episodes()
         scrape_movie()
         scrape_future()
+    """
