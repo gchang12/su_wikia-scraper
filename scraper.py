@@ -8,6 +8,7 @@ Scrapes the SU Wikia for transcripts.
 """
 
 from pathlib import Path
+from threading import Thread
 import logging
 import re
 
@@ -81,18 +82,20 @@ def format_linelist(linelist: list):
     """
     Transforms a list of 2-tuples of str-objects into a writeable str.
     """
-    new_linelist = []
-    for speaker, dialogue in linelist:
-        if speaker is None:
-            row_header = "|"
-        elif isinstance(speaker, str):
-            row_header = speaker
-        else:
-            raise TypeError("speaker := %s is not None or of str-type." % speaker)
-        assert isinstance(dialogue, str)
-        row_content = dialogue
-        new_linelist.append(row_header + ": " + row_content)
-    formatted_lines = "\n".join(new_linelist)
+    def speakerpipe_colon_formatter(line):
+        """
+        Gets a line (2-tuple of (None|str, str), and converts it to a string of the form, '(|\|speaker): dialogue'
+        """
+        speaker, dialogue = line
+        logging.debug("speaker := %s is of type %s.", speaker, type(speaker))
+        if not (isinstance(speaker, str) or speaker is None):
+            raise TypeError(f"speaker := {speaker} is of type {type(speaker)}; not None or str-type.")
+        assert dialogue is not None
+        row_header = ("|" if speaker is None else speaker)
+        logging.debug("row_header := %s is of type %s.", row_header, type(row_header))
+        speakerpipe_colon_line = row_header + ": " + dialogue
+        return speakerpipe_colon_line
+    formatted_lines = "\n".join(map(speakerpipe_colon_formatter, linelist))
     return formatted_lines
 
 def scrape_episodes():
@@ -116,25 +119,36 @@ def scrape_episodes():
         # everything here is just so hard-coupled
         return "https://steven-universe.fandom.com/wiki/Season_%d" % snum
 
-    # definitely implement threading for each season
-    # also, put this in a while-loop so that it works for lots of shows
-    for season_num in range(1, num_seasons + 1):
-        season_dir = output_dir.joinpath("Season_%d" % season_num)
+    def scrape_season(snum: int):
+        """
+        Scrapes all episodes from a given season.
+        """
+        season_dir = output_dir.joinpath("Season_%d" % snum)
         season_dir.mkdir(exist_ok=True)
         logging.info("Created %r output directory.", str(season_dir))
-        season_url = get_seasonurl(season_num)
-        logging.info("Scraping %r for episode list of Season_%d.", season_url, season_num)
+        season_url = get_seasonurl(snum)
+        logging.info("Scraping %r for episode list of Season_%d.", season_url, snum)
         episode_urls = scrape_episodeurls(season_url)
-        #logging.info("Episode list for Season_%d found. %d episodes found.", season_num, len(episode_urls))
+        #logging.info("Episode list for Season_%d found. %d episodes found.", snum, len(episode_urls))
         episode_indexno = 1
         for episode_name, episode_url in episode_urls:
             line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")
             logging.info("Scraping transcript for episode_name := %r from episode_url := %r", episode_name, WIKIA_ROOT + episode_url)
             formatted_lines = format_linelist(line_list)
-            episode_file = season_dir.joinpath(str(episode_indexno) + "-" + episode_name + ".txt")
+            episode_file = season_dir.joinpath("%02d" % episode_indexno + "-" + episode_name + ".txt")
             episode_file.write_text(formatted_lines)
-            logging.info("Episode transcript for Season_%d!%r written to %r", season_num, episode_name, str(episode_file))
+            logging.info("Episode transcript for Season_%d!%r written to %r", snum, episode_name, str(episode_file))
             episode_indexno += 1
+
+    # definitely implement threading for each season
+    # also, put this in a while-loop so that it works for lots of shows
+    thread_list = []
+    for season_num in range(1, num_seasons + 1):
+        scrapejob = Thread(target=scrape_season, args=[season_num])
+        thread_list.append(scrapejob)
+    for scrapejob in thread_list:
+        scrapejob.start()
+        scrapejob.join()
 
 def scrape_movie():
     """
@@ -167,7 +181,7 @@ def scrape_future():
         logging.info("Scraping Future!%r transcript from %r.", episode_name, episode_url)
         line_list = scrape_transcript(WIKIA_ROOT + episode_url + "/Transcript")
         formatted_lines = format_linelist(line_list)
-        episode_file = output_dir.joinpath(str(episode_indexno) + "-" + episode_name + ".txt")
+        episode_file = output_dir.joinpath("%02d" % episode_indexno + "-" + episode_name + ".txt")
         episode_file.write_text(formatted_lines)
         episode_indexno += 1
 
@@ -194,7 +208,7 @@ def scrape_shorts():
         line_list = scrape_transcript(source_url)
         formatted_lines = format_linelist(line_list)
         # write to file
-        output_file = output_dir.joinpath(str(index) + "-" + short_title + ".txt")
+        output_file = output_dir.joinpath("%02d" % index + "-" + short_title + ".txt")
         output_file.write_text(formatted_lines)
         logging.info("Short #%d found: %r. Scraped and wrote %d lines to %r", index, short_title, len(line_list), str(output_file))
 
@@ -202,7 +216,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
     scrape_or_no = "y"
     output_dir = Path(OUTPUT_NAME)
-    scrape_shorts()
+    scrape_episodes()
+    #scrape_shorts()
     """
     while scrape_or_no not in ("y", "n") and output_dir.exists():
         scrape_or_no = input(f"\n    '{str(output_dir)}' directory for transcripts already exists. Overwrite, and remake? (y/n) ")

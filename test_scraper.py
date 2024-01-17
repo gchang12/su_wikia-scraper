@@ -75,4 +75,5 @@ class ScraperTest(unittest.TestCase):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, filename=LOGGING_FILE)
-    unittest.main()
+    #help(unittest.main)
+    unittest.main(defaultTest='test_format_linelist', module=ScraperTest)
